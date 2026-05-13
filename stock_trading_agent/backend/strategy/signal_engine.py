@@ -10,6 +10,7 @@ from features.indicators import add_indicators, get_volume_strength
 from models.predictor import Predictor
 from risk.risk_manager import RiskManager
 from features.sentiment import get_news_sentiment
+from news.economic_calendar import get_economic_calendar, adjust_signal_for_news
 from typing import Dict, Any
 
 
@@ -138,6 +139,7 @@ class SignalEngine:
     """Generate trading signals from internal computations."""
 
     def __init__(self, settings: Settings) -> None:
+        self.settings = settings
         self.predictor = Predictor()
         self.risk_manager = RiskManager(settings)
 
@@ -393,6 +395,12 @@ class SignalEngine:
         sent = sentiment.get("sentiment", "UNAVAILABLE")
         confidence = self._confidence_adjustments(confidence, final_signal, trends, sentiment, vol_strength, session, structure)
 
+        # Check for high-impact economic news
+        news_data = get_economic_calendar(self.settings)
+        final_signal, confidence, news_warning = adjust_signal_for_news(
+            final_signal, confidence, symbol, news_data
+        )
+
         market_bias = "BULLISH" if higher_bias > 0 else "BEARISH" if higher_bias < 0 else "NEUTRAL"
         trend_strength = self._trend_strength(trends)
 
@@ -422,6 +430,8 @@ class SignalEngine:
         reason_parts.append(f"Session: {session['active_session']} ({session['session_volatility']})")
         if sent != "UNAVAILABLE":
             reason_parts.append(f"News: {sent} ({sentiment.get('score',0)})")
+        if news_warning:
+            reason_parts.append(news_warning)
 
         reason = "; ".join([p for p in reason_parts if p])
 
@@ -441,6 +451,7 @@ class SignalEngine:
             "trend_strength": trend_strength,
             "volume_strength": vol_strength,
             "news_sentiment": sentiment,
+            "economic_calendar": news_data,
             "market_structure": structure.get("market_structure", "Neutral"),
             "bos": structure.get("bos", "None"),
             "liquidity_sweep": structure.get("liquidity_sweep", "None"),

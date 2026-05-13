@@ -83,27 +83,27 @@ function Chatbot({ currentResult }) {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="chatbot-fab w-16 h-16 rounded-full bg-gradient-to-br from-bullish to-gold text-dark-bg flex items-center justify-center shadow-2xl hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] hover:scale-110 transition-smooth live-pulse"
+        className="chatbot-fab w-14 h-14 rounded-full bg-gradient-to-br from-bullish to-gold text-dark-bg flex items-center justify-center shadow-lg hover:shadow-glow-bullish hover:scale-110 transition-all fixed bottom-6 right-6 z-40 live-pulse"
       >
-        {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
+        {isOpen ? <X size={20} /> : <MessageCircle size={20} />}
       </button>
 
       {/* Chat Panel */}
       {isOpen && (
         <div
-          className={`chatbot-panel glass-lg border border-gray-700/50 rounded-xl shadow-2xl transition-all fade-in ${
-            isMinimized ? 'h-16' : 'h-[500px]'
+          className={`chatbot-panel glass-lg border border-gray-700/40 rounded-lg shadow-xl transition-all fade-in fixed bottom-24 right-6 w-80 z-40 ${
+            isMinimized ? 'h-14' : 'h-96'
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gradient-to-r from-bullish/20 to-gold/10 rounded-t-xl">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-bullish/20 rounded-lg">
-                <MessageCircle size={20} className="text-bullish" />
+          <div className="flex items-center justify-between p-3 border-b border-gray-700/30 bg-gradient-to-r from-bullish/15 to-gold/10 rounded-t-lg">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-bullish/20 rounded-lg">
+                <MessageCircle size={14} className="text-bullish" />
               </div>
-              <div>
-                <h3 className="font-bold text-white">AI Assistant</h3>
-                <p className="text-xs text-gray-400">Trading support</p>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-white truncate">AI Assistant</h3>
+                <p className="text-[10px] text-gray-400">Trading support</p>
               </div>
             </div>
             <button

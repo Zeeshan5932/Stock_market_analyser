@@ -14,74 +14,79 @@ import {
 } from '../utils/formatters'
 
 function MarketCards({ result }) {
+  const signal = result?.signal || 'HOLD'
+  const signalColorMap = {
+    'BUY': { bg: 'bg-bullish/10', border: 'border-bullish/40', text: 'text-bullish', icon: 'from-bullish to-bullish-dark' },
+    'STRONG BUY': { bg: 'bg-bullish/10', border: 'border-bullish/40', text: 'text-bullish', icon: 'from-bullish to-bullish-dark' },
+    'SELL': { bg: 'bg-bearish/10', border: 'border-bearish/40', text: 'text-bearish', icon: 'from-bearish to-red-600' },
+    'STRONG SELL': { bg: 'bg-bearish/10', border: 'border-bearish/40', text: 'text-bearish', icon: 'from-bearish to-red-600' },
+    'HOLD': { bg: 'bg-yellow-500/10', border: 'border-yellow-500/40', text: 'text-yellow-400', icon: 'from-yellow-500 to-amber-500' },
+    'WAIT_FOR_NEWS': { bg: 'bg-orange-500/10', border: 'border-orange-500/40', text: 'text-orange-400', icon: 'from-orange-500 to-red-500' },
+  }
+
+  const cardBg = signalColorMap[signal] || { bg: 'bg-gray-500/10', border: 'border-gray-500/40', text: 'text-gray-400', icon: 'from-gray-500 to-gray-400' }
+
   const cards = [
     {
-      title: 'Current Price',
-      value: formatPrice(result?.latest_price),
+      title: 'Pair',
+      value: result?.symbol || '-',
       icon: DollarSign,
-      color: 'from-blue-600 to-blue-400',
-      detail: result?.symbol || '-',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/40',
+      detail: formatPrice(result?.latest_price),
     },
     {
       title: 'Signal',
-      value: result?.signal || '-',
+      value: signal,
       icon: Target,
-      color: 'from-purple-600 to-purple-400',
-      className: getSignalColor(result?.signal),
-      bgColor: getSignalBgColor(result?.signal),
+      bg: cardBg.bg,
+      border: cardBg.border,
+      text: cardBg.text,
       detail: formatConfidence(result?.confidence) + ' confidence',
     },
     {
-      title: 'Market Bias',
+      title: 'Bias',
       value: result?.market_bias || '-',
       icon: TrendingUp,
-      color: 'from-emerald-600 to-emerald-400',
-      className: getBiasColor(result?.market_bias),
+      bg: result?.market_bias === 'BULLISH' ? 'bg-bullish/10' : 'bg-bearish/10',
+      border: result?.market_bias === 'BULLISH' ? 'border-bullish/40' : 'border-bearish/40',
+      text: result?.market_bias === 'BULLISH' ? 'text-bullish' : 'text-bearish',
       detail: 'Multi-timeframe',
     },
     {
       title: 'Volatility',
       value: result?.session?.volatility ?? '-',
       icon: Zap,
-      color: 'from-orange-600 to-orange-400',
+      bg: 'bg-orange-500/10',
+      border: 'border-orange-500/40',
       detail: result?.session?.active_session || '-',
     },
   ]
-
-  const signal = result?.signal || 'HOLD'
-  const signalGlow = {
-    'BUY': 'glow-bullish',
-    'SELL': 'glow-bearish',
-    'HOLD': 'glow-gold',
-  }[signal] || 'glow-accent'
 
   return (
     <>
       {cards.map((card, idx) => {
         const Icon = card.icon
-        const cardGlow = card.title === 'Signal' ? signalGlow : ''
         return (
           <div
             key={idx}
-            className={`glass-lg border border-gray-700/50 p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl hover-glow transition-smooth fade-in ${
-              card.bgColor ? `${card.bgColor}` : ''
-            } ${cardGlow}`}
+            className={`market-card glass border ${card.border} ${card.bg} p-3 sm:p-4 rounded-lg fade-in`}
             style={{ animationDelay: `${idx * 0.1}s` }}
           >
-            <div className="flex items-start justify-between mb-3 sm:mb-4">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest line-clamp-2">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest line-clamp-1">
                 {card.title}
               </span>
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-bullish to-gold rounded-lg flex-shrink-0">
-                <Icon size={12} className="sm:w-4 sm:h-4 text-dark-bg" />
+              <div className={`p-1.5 bg-gradient-to-br ${card.icon === DollarSign ? 'from-blue-500 to-blue-400' : card.icon === Target ? (signal === 'BUY' ? 'from-bullish to-bullish-dark' : signal === 'SELL' ? 'from-bearish to-red-600' : 'from-yellow-500 to-amber-500') : card.icon === TrendingUp ? (result?.market_bias === 'BULLISH' ? 'from-bullish to-bullish-dark' : 'from-bearish to-red-600') : 'from-orange-500 to-red-500'} rounded flex-shrink-0`}>
+                <Icon size={12} className="text-white" />
               </div>
             </div>
 
-            <p className={`text-lg sm:text-xl font-semibold mb-2 break-words ${card.className || 'text-white'}`}>
+            <p className={`text-base sm:text-lg font-bold ${card.text || 'text-white'} break-words mb-1`}>
               {card.value}
             </p>
 
-            <p className="text-[11px] text-gray-400 font-medium truncate">{card.detail}</p>
+            <p className="text-[10px] text-gray-400 font-medium truncate">{card.detail}</p>
           </div>
         )
       })}

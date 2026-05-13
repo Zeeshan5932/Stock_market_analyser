@@ -13,48 +13,47 @@ function TrendTable({ result }) {
   const trendStrength = typeof result.trend_strength === 'number' ? result.trend_strength : 0
 
   return (
-    <div className="glass-lg border border-gray-700/50 rounded-xl p-5 sm:p-6 fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-gold to-yellow-500 rounded-lg">
-            <BarChart2 size={22} className="text-dark-bg" />
+    <div className="glass-lg border border-gray-700/30 rounded-lg p-4 sm:p-5 fade-in">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-gradient-to-br from-gold to-yellow-500 rounded-lg">
+            <BarChart2 size={18} className="text-dark-bg" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-white">Multi-Timeframe Analysis</h3>
-            <p className="text-[11px] text-gray-400">Cross-timeframe trend confirmation</p>
+            <h3 className="text-sm font-bold text-white\">Multi-Timeframe Trends</h3>
+            <p className="text-[10px] text-gray-400\">5 timeframe analysis</p>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+      <div className="overflow-x-auto\">
+        <table className="w-full text-xs\">
           <thead>
-            <tr className="border-b border-gray-700/50 bg-dark-card-light/30">
-              <th className="text-left py-3 px-3 text-gray-400 font-bold uppercase tracking-widest text-[10px]">Timeframe</th>
-              <th className="text-center py-3 px-3 text-gray-400 font-bold uppercase tracking-widest text-[10px]">Trend</th>
-              <th className="text-center py-3 px-3 text-gray-400 font-bold uppercase tracking-widest text-[10px]">Status</th>
+            <tr className="border-b border-gray-700/20 bg-dark-card-light/15\">
+              <th className="text-left py-2 px-3 text-gray-400 font-bold uppercase tracking-widest text-[10px]\">Timeframe</th>
+              <th className="text-center py-2 px-3 text-gray-400 font-bold uppercase tracking-widest text-[10px]\">Trend</th>
             </tr>
           </thead>
           <tbody>
             {trends.map((trend, idx) => (
               <tr
                 key={idx}
-                className="border-b border-gray-700/30 hover:bg-dark-card-light/40 transition-smooth"
+                className="border-b border-gray-700/20 hover:bg-dark-card-light/20 transition-smooth"
               >
-                <td className="py-3 px-3 font-semibold text-gray-200">{trend.name}</td>
-                <td className="py-3 px-3 text-center">
-                  <span
-                    style={{ color: getTrendColor(trend.value) }}
-                    className="font-semibold text-sm"
-                  >
+                <td className="py-2 px-3 font-semibold text-gray-300 text-sm">{trend.name}</td>
+                <td className="py-2 px-3 text-center">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${
+                    trend.value === 'BULLISH' ? 'bg-bullish/20 text-bullish border border-bullish/40' :
+                    trend.value === 'BEARISH' ? 'bg-bearish/20 text-bearish border border-bearish/40' :
+                    'bg-gray-600/20 text-gray-300 border border-gray-600/40'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      trend.value === 'BULLISH' ? 'bg-bullish' :
+                      trend.value === 'BEARISH' ? 'bg-bearish' :
+                      'bg-gray-500'
+                    }`}></span>
                     {trend.value}
                   </span>
-                </td>
-                <td className="py-3 px-3 text-center">
-                  <div
-                    className="w-3 h-3 rounded-full mx-auto"
-                    style={{ backgroundColor: getTrendColor(trend.value) }}
-                  />
                 </td>
               </tr>
             ))}

@@ -2,6 +2,7 @@ import React from 'react'
 import MarketCards from './MarketCards'
 import TradingChart from './TradingChart'
 import RiskPanel from './RiskPanel'
+import NewsAlert from './NewsAlert'
 import TrendTable from './TrendTable'
 import SignalPanel from './SignalPanel'
 import { AlertCircle } from 'lucide-react'
@@ -126,9 +127,10 @@ function MainDashboard({
               />
             </div>
 
-            {/* Risk Panel - Full width on mobile */}
-            <div className="lg:col-span-1">
+            {/* Right Column: Risk Panel and News Alert */}
+            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
               <RiskPanel result={analysisResult} />
+              <NewsAlert result={analysisResult} />
             </div>
           </div>
 

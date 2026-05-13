@@ -51,35 +51,34 @@ function Sidebar({
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } fixed lg:static h-full z-40 lg:z-auto backdrop-blur-md`}
       >
-        <div className="p-5 sm:p-6 border-b border-gray-700/50 sticky top-0 sidebar-header backdrop-blur-md">
-          <div className="flex items-center gap-3 justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center">
-                <BarChart3 size={22} className="text-dark-bg" />
+        <div className="p-3 sm:p-4 border-b border-gray-700/30 sticky top-0 sidebar-header backdrop-blur-md">
+          <div className="flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center flex-shrink-0">
+                <BarChart3 size={18} className="text-dark-bg" />
               </div>
-              <div>
-                <h2 className="font-bold text-white text-lg">Terminal</h2>
-                <p className="text-xs text-gray-400">AI Trading</p>
+              <div className="min-w-0">
+                <h2 className="font-bold text-white text-sm">Trading</h2>
+                <p className="text-[10px] text-gray-400">Controls</p>
               </div>
             </div>
             <button
               onClick={() => setShowHelper(!showHelper)}
-              className="text-gray-400 hover:text-bullish transition-smooth"
+              className="text-gray-400 hover:text-bullish transition-smooth flex-shrink-0"
               title="Help"
             >
-              <HelpCircle size={18} />
+              <HelpCircle size={16} />
             </button>
           </div>
         </div>
 
         {showHelper && (
-          <div className="px-5 sm:px-6 py-4 sidebar-helper text-xs text-yellow-200 space-y-2">
-            <p className="font-semibold">💡 Pro Tips:</p>
-            <ul className="space-y-1 list-disc list-inside">
+          <div className="px-3 sm:px-4 py-3 sidebar-helper text-xs text-yellow-200 space-y-1.5 border-b border-gray-700/20">
+            <p className="font-semibold">Tips:</p>
+            <ul className="space-y-0.5 list-disc list-inside text-[11px]">
               <li>1m/5m for entries</li>
               <li>1h/4h for trends</li>
-              <li>Use 1d lookback for scans</li>
-              <li>Enable auto-refresh</li>
+              <li>1d lookback scans</li>
             </ul>
           </div>
         )}

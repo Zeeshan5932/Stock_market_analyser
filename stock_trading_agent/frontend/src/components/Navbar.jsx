@@ -47,22 +47,19 @@ function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
   }
 
   return (
-    <nav className="glass-lg border-b border-gray-700/50 px-4 sm:px-6 lg:px-8 py-3 flex flex-col gap-3 sm:gap-4 backdrop-blur-md">
-      {/* Left: Logo & App Title */}
-      <div className="flex items-center justify-between gap-3 w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center hover-glow cursor-pointer">
-            <BarChart3 size={24} className="text-dark-bg" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight whitespace-nowrap">
-              AI FX Trading
-            </h1>
-            <p className="text-xs text-gray-400">Real-time Market Analysis</p>
-          </div>
+    <nav className="nav-terminal border-b border-accent/20 px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3 backdrop-blur-md bg-dark-navy/80">
+      {/* Left: Logo & LIVE Indicator */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center">
+          <BarChart3 size={18} className="text-dark-bg" />
         </div>
-
-        <div className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Market Terminal</div>
+        <div className="hidden sm:block">
+          <h1 className="text-xs font-bold text-white tracking-tight">AI FX Terminal</h1>
+        </div>
+        <div className="flex items-center gap-1.5 ml-1 px-2 py-1 bg-bullish/15 border border-bullish/40 rounded-full">
+          <div className="w-1.5 h-1.5 bg-bullish rounded-full live-pulse"></div>
+          <span className="text-[10px] font-semibold text-bullish\">LIVE</span>
+        </div>
       </div>
 
       {/* Center: Current Asset & Price Info */}
