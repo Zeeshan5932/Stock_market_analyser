@@ -1,10 +1,10 @@
 .env
-# add important files to ignore
+# add important files to ign
 node_modules/
 dist/
 build/
 coverage/
-# add log files to ignore
+# add log files
 *.log
 pycache__/
 *.pyc

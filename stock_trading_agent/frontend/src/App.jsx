@@ -1,15 +1,22 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import MainDashboard from './components/MainDashboard'
 import Chatbot from './components/Chatbot'
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthRoute from './components/AuthRoute'
+import AuthLoading from './components/AuthLoading'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 import { analyzeMarket, getCandles } from './api/marketApi'
+import { useAuth } from './context/AuthContext'
 
-function App() {
+const TradingApp = () => {
   const [selectedMarket, setSelectedMarket] = useState('Forex')
   const [selectedPair, setSelectedPair] = useState('GBP/USD')
-  const [selectedTimeframe, setSelectedTimeframe] = useState('15m')
-  const [selectedLookback, setSelectedLookback] = useState('5d')
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1m')
+  const [selectedLookback, setSelectedLookback] = useState('1d')
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [refreshInterval, setRefreshInterval] = useState(60)
 
@@ -17,22 +24,38 @@ function App() {
   const [candles, setCandles] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [loadingStage, setLoadingStage] = useState('idle')
+
+  useEffect(() => {
+    let skeletonTimer
+    if (loading && !analysisResult) {
+      setLoadingStage('initial')
+      skeletonTimer = setTimeout(() => {
+        setLoadingStage('skeleton')
+      }, 450)
+    } else {
+      setLoadingStage('idle')
+    }
+
+    return () => {
+      if (skeletonTimer) {
+        clearTimeout(skeletonTimer)
+      }
+    }
+  }, [loading, analysisResult])
 
   // Perform market analysis
   const performAnalysis = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await analyzeMarket(selectedPair, selectedTimeframe, selectedLookback)
-      const safeResult = result ?? null
-      setAnalysisResult(safeResult)
-      console.log('analysis', safeResult)
+      const [result, candleData] = await Promise.all([
+        analyzeMarket(selectedPair, selectedTimeframe, selectedLookback),
+        getCandles(selectedPair, selectedTimeframe, selectedLookback),
+      ])
 
-      // Fetch candles
-      const candleData = await getCandles(selectedPair, selectedTimeframe, selectedLookback)
-      const safeCandles = Array.isArray(candleData) ? candleData : []
-      setCandles(safeCandles)
-      console.log('candles', safeCandles)
+      setAnalysisResult(result ?? null)
+      setCandles(Array.isArray(candleData) ? candleData : [])
     } catch (err) {
       setError(err?.message || 'Failed to analyze market')
       console.error('Analysis error:', err)
@@ -42,6 +65,14 @@ function App() {
       setLoading(false)
     }
   }, [selectedPair, selectedTimeframe, selectedLookback])
+
+  const hasAutoRunRef = useRef(false)
+
+  useEffect(() => {
+    if (hasAutoRunRef.current) return
+    hasAutoRunRef.current = true
+    performAnalysis()
+  }, [performAnalysis])
 
   // Handle market change
   const handleMarketChange = (market) => {
@@ -86,6 +117,8 @@ function App() {
         <Navbar
           selectedPair={selectedPair}
           analysisResult={analysisResult}
+          loading={loading}
+          loadingStage={loadingStage}
         />
 
         {/* Dashboard */}
@@ -93,15 +126,61 @@ function App() {
           analysisResult={analysisResult}
           candles={candles}
           loading={loading}
+          loadingStage={loadingStage}
           error={error}
           selectedPair={selectedPair}
           selectedTimeframe={selectedTimeframe}
+          selectedLookback={selectedLookback}
+          selectedMarket={selectedMarket}
         />
       </div>
 
       {/* Floating Chatbot */}
       <Chatbot currentResult={analysisResult} />
     </div>
+  )
+}
+
+const AuthRedirect = () => {
+  const { user, authLoading } = useAuth()
+
+  if (authLoading) {
+    return <AuthLoading message="Preparing your session..." />
+  }
+
+  return <Navigate to={user ? '/trading' : '/login'} replace />
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AuthRedirect />} />
+      <Route
+        path="/login"
+        element={
+          <AuthRoute>
+            <Login />
+          </AuthRoute>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <AuthRoute>
+            <Signup />
+          </AuthRoute>
+        }
+      />
+      <Route
+        path="/trading"
+        element={
+          <ProtectedRoute>
+            <TradingApp />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
