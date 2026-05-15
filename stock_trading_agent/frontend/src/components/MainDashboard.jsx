@@ -5,6 +5,8 @@ import RiskPanel from './RiskPanel'
 import NewsAlert from './NewsAlert'
 import TrendTable from './TrendTable'
 import SignalPanel from './SignalPanel'
+import IndicatorsPanel from './IndicatorsPanel'
+import SMCPanel from './SMCPanel'
 import { AlertCircle } from 'lucide-react'
 
 function MainDashboard({
@@ -40,7 +42,7 @@ function MainDashboard({
           <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-bullish border-t-transparent rounded-full animate-spin" />
           <div>
             <p className="text-sm sm:text-base font-semibold text-white">Loading market analysis</p>
-            <p className="text-xs text-gray-400 mt-1">Fetching live data and preparing insights.</p>
+            <p className="text-xs text-gray-400 mt-1">Fetching live market data...</p>
           </div>
         </div>
       )}
@@ -136,6 +138,12 @@ function MainDashboard({
 
           {/* Signal Panel */}
           <SignalPanel result={analysisResult} />
+
+          {/* Indicator + SMC Panels */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+            <IndicatorsPanel result={analysisResult} />
+            <SMCPanel result={analysisResult} />
+          </div>
 
           {/* Trends Table */}
           <TrendTable result={analysisResult} />

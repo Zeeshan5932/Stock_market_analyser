@@ -87,6 +87,14 @@ def _structure_from_frame(df: pd.DataFrame) -> dict[str, object]:
     market_structure = "Bullish" if latest.get("EMA_20", 0) > latest.get("EMA_50", 0) and close >= latest.get("SMA_200", close) else "Bearish" if latest.get("EMA_20", 0) < latest.get("EMA_50", 0) and close <= latest.get("SMA_200", close) else "Neutral"
     bos = "Bullish BOS" if close > prev_high else "Bearish BOS" if close < prev_low else "None"
     liquidity_sweep = "Bearish sweep" if high > resistance and close < resistance else "Bullish sweep" if low < support and close > support else "None"
+    
+    # CHOCH detection: Change of Character based on trend reversal
+    choch = "None"
+    if len(working) >= 10:
+        recent_trend = "Bullish" if working.iloc[-5:].mean().get("Close", close) > working.iloc[-10:-5].mean().get("Close", close) else "Bearish"
+        older_trend = "Bullish" if working.iloc[-10:-5].mean().get("Close", close) > working.iloc[-15:-10].mean().get("Close", close) else "Bearish"
+        if recent_trend != older_trend:
+            choch = f"CHOCH: {older_trend} to {recent_trend}"
 
     padding = atr * 0.6 if atr > 0 else abs(close) * 0.002
     support_zone = (round(support - padding, 6), round(support + padding, 6)) if support else (None, None)
@@ -94,6 +102,7 @@ def _structure_from_frame(df: pd.DataFrame) -> dict[str, object]:
     return {
         "market_structure": market_structure,
         "bos": bos,
+        "choch": choch,
         "liquidity_sweep": liquidity_sweep,
         "support_zone": support_zone,
         "resistance_zone": resistance_zone,
@@ -354,6 +363,7 @@ class SignalEngine:
                 "news_sentiment": {"sentiment": "UNAVAILABLE", "score": 0, "reason": "No entry data", "source": "Unavailable"},
                 "market_structure": structure.get("market_structure", "Neutral"),
                 "bos": structure.get("bos", "None"),
+                "choch": structure.get("choch", "None"),
                 "liquidity_sweep": structure.get("liquidity_sweep", "None"),
                 "support_zone": structure.get("support_zone", (None, None)),
                 "resistance_zone": structure.get("resistance_zone", (None, None)),
@@ -407,10 +417,26 @@ class SignalEngine:
         # ATR for risk levels from entry frame
         atr_value = 0.0
         latest_price = None
+        indicators = {
+            "rsi": None,
+            "macd": None,
+            "macd_signal": None,
+            "ema_20": None,
+            "ema_50": None,
+            "sma_200": None,
+            "atr": 0.0,
+        }
         if entry_df is not None and not entry_df.empty:
             last = entry_df.iloc[-1]
             latest_price = float(last.get("Close", 0.0))
             atr_value = float(last.get("ATR_14", 0.0) or 0.0)
+            indicators["atr"] = atr_value
+            indicators["rsi"] = float(last.get("RSI_14", 0.0)) if last.get("RSI_14") is not None else None
+            indicators["macd"] = float(last.get("MACD", 0.0)) if last.get("MACD") is not None else None
+            indicators["macd_signal"] = float(last.get("MACD_SIGNAL", 0.0)) if last.get("MACD_SIGNAL") is not None else None
+            indicators["ema_20"] = float(last.get("EMA_20", 0.0)) if last.get("EMA_20") is not None else None
+            indicators["ema_50"] = float(last.get("EMA_50", 0.0)) if last.get("EMA_50") is not None else None
+            indicators["sma_200"] = float(last.get("SMA_200", 0.0)) if last.get("SMA_200") is not None else None
 
         risk_profile = self.risk_manager.build_levels(
             final_signal,
@@ -442,6 +468,7 @@ class SignalEngine:
             "signal": final_signal,
             "confidence": confidence,
             "prediction_direction": final_signal,
+            "indicators": indicators,
             "trend_5m": trends.get("5m", "NEUTRAL"),
             "trend_15m": trends.get("15m", "NEUTRAL"),
             "trend_1h": trends.get("1h", "NEUTRAL"),
@@ -454,6 +481,7 @@ class SignalEngine:
             "economic_calendar": news_data,
             "market_structure": structure.get("market_structure", "Neutral"),
             "bos": structure.get("bos", "None"),
+            "choch": structure.get("choch", "None"),
             "liquidity_sweep": structure.get("liquidity_sweep", "None"),
             "support_zone": structure.get("support_zone", (None, None)),
             "resistance_zone": structure.get("resistance_zone", (None, None)),

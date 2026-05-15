@@ -146,6 +146,7 @@ async def analyze_market(request: AnalyzeRequest):
             "confidence": float(result.get("confidence", 0.0)),
             "market_bias": result.get("market_bias", "NEUTRAL"),
             "reason": result.get("reason", ""),
+            "indicators": result.get("indicators", {}),
             "trends": {
                 "5m": result.get("trend_5m", "NEUTRAL"),
                 "15m": result.get("trend_15m", "NEUTRAL"),
@@ -165,6 +166,19 @@ async def analyze_market(request: AnalyzeRequest):
             },
             "support_zone": support_list,
             "resistance_zone": resistance_list,
+            "smc": {
+                "market_structure": result.get("market_structure", "Neutral"),
+                "bos": result.get("bos", "None"),
+                "choch": result.get("choch", "None"),
+                "liquidity_sweep": result.get("liquidity_sweep", "None"),
+                "support_zone": support_list,
+                "resistance_zone": resistance_list,
+            },
+            "news_risk": {
+                "has_high_impact_news": result.get("economic_calendar", {}).get("has_high_impact_news", False),
+                "events": result.get("economic_calendar", {}).get("events", []),
+                "risk_note": result.get("economic_calendar", {}).get("risk_note", ""),
+            },
             "economic_calendar": result.get("economic_calendar", {"has_high_impact_news": False, "events": [], "risk_note": ""}),
             "warning": "Educational analysis only. Not financial advice.",
         }

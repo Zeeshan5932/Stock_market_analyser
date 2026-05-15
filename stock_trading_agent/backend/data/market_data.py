@@ -19,9 +19,25 @@ class MarketDataProvider:
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        self._cache: dict[str, tuple[datetime, pd.DataFrame]] = {}
+        self._twelvedata_backoff: dict[str, datetime] = {}
 
     def get_ohlcv(self, symbol: str, period: str = "5d", interval: str = "5m") -> pd.DataFrame:
+        cache_key = f"{symbol}_{interval}_{period}"
+        now = datetime.now(timezone.utc)
+        cached = self._cache.get(cache_key)
+        if cached is not None:
+            timestamp, cached_frame = cached
+            if now - timestamp < timedelta(seconds=60):
+                return cached_frame.copy()
+            self._cache.pop(cache_key, None)
+
         for provider in self.settings.provider_priority():
+            if provider == "twelvedata":
+                backoff_time = self._twelvedata_backoff.get(cache_key)
+                if backoff_time is not None and now - backoff_time < timedelta(seconds=60):
+                    continue
+
             fetcher = {
                 "twelvedata": self._fetch_twelvedata,
                 "oanda": self._fetch_oanda,
@@ -33,12 +49,20 @@ class MarketDataProvider:
                 continue
 
             frame = fetcher(symbol, period, interval)
-            df = self._normalize(frame) if frame is not None and not frame.empty else pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+            if frame is None or frame.empty:
+                if provider == "twelvedata":
+                    self._twelvedata_backoff[cache_key] = now
+                continue
+
+            df = self._normalize(frame)
             print("Provider:", provider, "Symbol:", symbol, "Interval:", interval, "Rows:", len(df))
             if not df.empty:
+                self._cache[cache_key] = (now, df.copy())
                 return df
 
-        return pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+        empty_frame = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+        self._cache[cache_key] = (now, empty_frame)
+        return empty_frame
 
     def get_multi_timeframe_data(self, symbol: str) -> dict:
         """Fetch multiple timeframes and attach indicators.
@@ -50,8 +74,6 @@ class MarketDataProvider:
             "5m": ("5d", "5m"),
             "15m": ("5d", "15m"),
             "1h": ("1mo", "1h"),
-            "4h": ("3mo", "4h"),
-            "1d": ("6mo", "1d"),
         }
 
         for key, (period, interval) in specs.items():
@@ -72,6 +94,10 @@ class MarketDataProvider:
             except Exception:
                 out[key] = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
 
+        # Keep longer-term timeframes available as neutral placeholders if analysis needs them.
+        for key in ["4h", "1d"]:
+            out.setdefault(key, pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"]))
+
         return out
 
     def _fetch_yfinance(self, symbol: str, period: str, interval: str) -> pd.DataFrame | None:
@@ -80,7 +106,14 @@ class MarketDataProvider:
 
             ticker = self._yfinance_symbol(symbol)
             download_interval = interval if interval != "4h" else "1h"
-            frame = yf.download(ticker, period=period, interval=download_interval, auto_adjust=False, progress=False)
+            frame = yf.download(
+                ticker,
+                period=period,
+                interval=download_interval,
+                auto_adjust=False,
+                progress=False,
+                timeout=10,
+            )
             if frame is None or frame.empty:
                 return None
             frame = self._flatten_yfinance_frame(frame)
@@ -367,7 +400,7 @@ class MarketDataProvider:
         query = urlencode({key: value for key, value in params.items() if value is not None})
         request = Request(f"{url}?{query}", headers=headers or {})
         try:
-            with urlopen(request, timeout=20) as response:
+            with urlopen(request, timeout=10) as response:
                 content = response.read().decode("utf-8")
                 return json.loads(content)
         except (URLError, TimeoutError, json.JSONDecodeError, ValueError):

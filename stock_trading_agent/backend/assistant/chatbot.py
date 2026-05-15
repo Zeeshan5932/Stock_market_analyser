@@ -36,8 +36,26 @@ def _detect_intent(question: str) -> str:
         return "realtime"
     if any(word in question for word in ("timeframe", "15m", "1h", "5m", "4h")):
         return "timeframe"
+    if any(word in question for word in ("rsi", "relative strength index")):
+        return "rsi"
+    if any(word in question for word in ("macd",)):
+        return "macd"
+    if any(word in question for word in ("smc", "smart money", "market structure", "bos", "order block", "liquidity", "breaker block")):
+        return "smc"
+    if any(word in question for word in ("news", "economic", "fomc", "nfp", "cpi", "fed", "central bank")):
+        return "news"
     if any(word in question for word in ("xau", "gold", "xag", "silver", "gbp", "eur", "btc", "crypto")):
         return "pair"
+    if any(word in question for word in ("indicators", "indicator")):
+        return "indicators"
+    if any(word in question for word in ("moving average", "ema", "sma")):
+        return "moving_average"
+    if any(word in question for word in ("support", "resistance")):
+        return "support_resistance"
+    if any(word in question for word in ("volatility",)):
+        return "volatility"
+    if any(word in question for word in ("confidence",)):
+        return "confidence"
     return "general"
 
 
@@ -136,7 +154,7 @@ def get_chatbot_response(user_question: str, result: Dict[str, Any] | None = Non
         )
 
     if intent == "chart":
-        return _with_warning("The chart shows price movement using candles. Each candle has open, high, low, and close prices. Green candles mean price moved up, and red candles mean price moved down. Use 15m for entry view and 1h/4h for bigger trend.")
+        return _with_warning("The chart displays live market candles. Green candles usually mean upward movement, red candles mean downward movement. Traders use candles to analyze price action.")
 
     if intent == "signal":
         signal = current['signal']
@@ -171,6 +189,33 @@ def get_chatbot_response(user_question: str, result: Dict[str, Any] | None = Non
 
     if intent == "pair":
         return _with_warning("Pairs represent markets. XAU/USD is gold against the US dollar, XAG/USD is silver, GBP/USD is British pound against the US dollar, and BTC/USD is Bitcoin against the US dollar.")
+
+    if intent == "rsi":
+        return _with_warning("RSI (Relative Strength Index) measures market momentum from 0 to 100. Above 70 can mean overbought, below 30 can mean oversold.")
+
+    if intent == "macd":
+        return _with_warning("MACD helps identify trend direction and momentum using moving averages. Bullish MACD may support BUY signals, bearish MACD may support SELL signals.")
+
+    if intent == "smc":
+        return _with_warning("SMC (Smart Money Concepts) analyzes market structure, liquidity, BOS, and institutional movement to identify potential trade direction.")
+
+    if intent == "news":
+        return _with_warning("High-impact economic news like CPI, NFP, FOMC decisions, and Fed speeches can cause sharp price moves. This dashboard checks for upcoming news events and may adjust signals if major news is within the next hour to protect against sudden volatility.")
+
+    if intent == "indicators":
+        return _with_warning("Indicators are tools used to analyze market direction and momentum. This dashboard uses RSI, MACD, Moving Averages, and SMC concepts to help generate trading signals.")
+
+    if intent == "moving_average":
+        return _with_warning("Moving averages help identify trend direction. If price is above major averages, market may be bullish. Below averages may indicate bearish trend.")
+
+    if intent == "support_resistance":
+        return _with_warning("Support is an area where price may stop falling. Resistance is an area where price may stop rising.")
+
+    if intent == "volatility":
+        return _with_warning("Volatility shows how fast and strongly price is moving. High volatility means bigger and faster price movement.")
+
+    if intent == "confidence":
+        return _with_warning("Confidence shows how strongly the system supports the current signal based on indicators, trend, and market structure.")
 
     if settings.gemini_api_key:
         model_prompt = (

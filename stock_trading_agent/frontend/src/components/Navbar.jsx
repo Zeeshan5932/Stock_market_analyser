@@ -47,117 +47,103 @@ function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
   }
 
   return (
-    <nav className="nav-terminal border-b border-accent/20 px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3 backdrop-blur-md bg-dark-navy/80">
-      {/* Left: Logo & LIVE Indicator */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center">
-          <BarChart3 size={18} className="text-dark-bg" />
-        </div>
-        <div className="hidden sm:block">
-          <h1 className="text-xs font-bold text-white tracking-tight">AI FX Terminal</h1>
-        </div>
-        <div className="flex items-center gap-1.5 ml-1 px-2 py-1 bg-bullish/15 border border-bullish/40 rounded-full">
-          <div className="w-1.5 h-1.5 bg-bullish rounded-full live-pulse"></div>
-          <span className="text-[10px] font-semibold text-bullish\">LIVE</span>
+    <nav className="navbar nav-terminal border-b border-accent/20 backdrop-blur-md bg-dark-navy/80">
+      <div className="navbar-left">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bullish to-gold flex items-center justify-center flex-shrink-0">
+            <BarChart3 size={18} className="text-dark-bg" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">AI FX Terminal</h1>
+            <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em] truncate">Market analysis dashboard</p>
+          </div>
         </div>
       </div>
 
-      {/* Center: Current Asset & Price Info */}
-      <div className="nav-row nav-scroll scrollbar-hide lg:justify-center lg:overflow-visible">
-          {/* Selected Pair */}
-          <div className="glass nav-card border border-gray-600/50 px-4 py-2 rounded-lg min-w-[140px] sm:min-w-[150px]">
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Trading Pair</p>
-            <p className="text-base sm:text-lg font-semibold text-white">{selectedPair}</p>
+      <div className="navbar-center">
+        <div className={`nav-pill ${isSkeletonLoading ? 'opacity-80' : ''}`}>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-gray-400">Trading Pair</p>
+            <p className="text-sm sm:text-base font-semibold text-white truncate">{selectedPair}</p>
           </div>
+        </div>
 
-          {/* Live Price */}
-          {isSkeletonLoading && (
-            <div className="glass nav-card border border-gray-600/50 px-4 py-2 rounded-lg min-w-[160px] sm:min-w-[170px]">
+        {isSkeletonLoading ? (
+          <div className="nav-pill w-[170px] max-w-full">
+            <div className="w-full">
               <div className="skeleton h-3 w-20 mb-2"></div>
-              <div className="skeleton h-6 w-28"></div>
+              <div className="skeleton h-5 w-28"></div>
             </div>
-          )}
-
-          {analysisResult && (
-            <div className="glass nav-card border border-gray-600/50 px-4 py-2 rounded-lg min-w-[160px] sm:min-w-[170px]">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Live Price</p>
+          </div>
+        ) : analysisResult ? (
+          <div className="nav-pill">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Live Price</p>
               <div className="flex items-center gap-2">
-                <p className={`text-base sm:text-lg font-semibold ${analysisResult.latest_price > 1.1 ? 'text-bullish' : 'text-bearish'}`}>
+                <p className={`text-sm sm:text-base font-semibold ${analysisResult.latest_price > 1.1 ? 'text-bullish' : 'text-bearish'}`}>
                   {analysisResult.latest_price?.toFixed(5)}
                 </p>
                 <div className={`flex items-center gap-0.5 ${priceChange > 0 ? 'text-bullish' : 'text-bearish'}`}>
-                  {priceChange > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {priceChange > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                   <span className="text-[11px] font-semibold">{Math.abs(priceChange).toFixed(2)}%</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        ) : null}
 
-          {/* Active Session */}
-          {isSkeletonLoading && (
-            <div className="glass nav-card border border-gold/30 px-4 py-2 rounded-lg glow-gold min-w-[150px] sm:min-w-[160px]">
+        {isSkeletonLoading ? (
+          <div className="nav-pill w-[160px] max-w-full">
+            <div className="w-full">
               <div className="skeleton h-3 w-16 mb-2"></div>
-              <div className="skeleton h-6 w-32"></div>
+              <div className="skeleton h-5 w-24"></div>
             </div>
-          )}
-
-          {analysisResult?.session && (
-            <div className="glass nav-card border border-gold/30 px-4 py-2 rounded-lg glow-gold min-w-[150px] sm:min-w-[160px]">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Session</p>
-              <p className="text-sm sm:text-base font-semibold text-gold">{analysisResult.session.active_session}</p>
+          </div>
+        ) : analysisResult?.session ? (
+          <div className="nav-pill">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Session</p>
+              <p className="text-sm sm:text-base font-semibold text-gold truncate">{analysisResult.session.active_session}</p>
             </div>
-          )}
+          </div>
+        ) : null}
 
-          {/* Market Bias */}
-          {isSkeletonLoading && (
-            <div className="glass nav-card border px-4 py-2 rounded-lg min-w-[130px] sm:min-w-[140px] border-yellow-400/30">
+        {isSkeletonLoading ? (
+          <div className="nav-pill w-[140px] max-w-full">
+            <div className="w-full">
               <div className="skeleton h-3 w-14 mb-2"></div>
-              <div className="skeleton h-6 w-20"></div>
+              <div className="skeleton h-5 w-20"></div>
             </div>
-          )}
-
-          {analysisResult && (
-            <div className={`glass nav-card border px-4 py-2 rounded-lg min-w-[130px] sm:min-w-[140px] ${signal === 'BUY' ? 'border-bullish/30 glow-bullish' : signal === 'SELL' ? 'border-bearish/30 glow-bearish' : 'border-yellow-400/30'}`}>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Signal</p>
-              <p className={`text-sm sm:text-base font-semibold signal-${signal.toLowerCase()}`}>{signal}</p>
+          </div>
+        ) : analysisResult ? (
+          <div className={`nav-pill ${signal === 'BUY' ? 'border-bullish/40' : signal === 'SELL' ? 'border-bearish/40' : 'border-yellow-400/30'}`}>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Signal</p>
+              <p className={`text-sm sm:text-base font-semibold ${signal === 'BUY' ? 'text-bullish' : signal === 'SELL' ? 'text-bearish' : 'text-yellow-400'} truncate`}>
+                {signal}
+              </p>
             </div>
-          )}
+          </div>
+        ) : null}
       </div>
 
-      {/* Right: Status Indicators */}
-      <div className="nav-row nav-scroll scrollbar-hide lg:justify-end lg:overflow-visible">
-        {/* LIVE Badge */}
-        <div className="nav-chip flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-bearish live-pulse"></div>
-          <span className="text-[10px] font-bold text-bearish uppercase tracking-widest">Live</span>
-        </div>
-
-        {/* UTC Time */}
-        <div className="nav-chip glass border border-gray-600/50 px-3 py-1.5 rounded-lg flex items-center gap-2">
-          <Clock size={14} className="text-accent" />
-          <span className="text-xs font-mono font-medium text-gray-300">{utcTime}</span>
-        </div>
-
-        {/* Peak Hours Indicator */}
-        {isPeakHours && (
-          <div className="nav-chip glass border border-bullish/30 px-3 py-1.5 rounded-lg flex items-center gap-2 glow-bullish">
-            <Zap size={14} className="text-bullish" />
-            <span className="text-[10px] font-bold text-bullish uppercase">Peak Hours</span>
+      <div className="navbar-right">
+        <div className="nav-pill">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-bearish live-pulse"></div>
+            <span className="text-[10px] font-bold text-bearish uppercase tracking-widest">LIVE</span>
           </div>
-        )}
+        </div>
 
-        {/* Data Provider */}
-        <div className="nav-chip glass border border-gray-600/50 px-3 py-1.5 rounded-lg">
-          <p className="text-[10px] font-mono text-gray-400">
-            <Activity size={12} className="inline mr-1" />
-            Real-time
-          </p>
+        <div className="nav-pill">
+          <Clock size={14} className="text-accent flex-shrink-0" />
+          <span className="text-xs font-mono font-medium text-gray-300">UTC {utcTime}</span>
         </div>
 
         {user && (
-          <div className="nav-chip glass border border-gray-600/50 px-3 py-1.5 rounded-lg flex items-center gap-2">
-            <UserCircle size={14} className="text-accent" />
-            <span className="text-xs font-semibold text-gray-200">{displayName}</span>
+          <div className="nav-pill">
+            <UserCircle size={14} className="text-accent flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-200 truncate max-w-[180px]">{user.email || displayName}</span>
           </div>
         )}
 
@@ -166,9 +152,9 @@ function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
             type="button"
             onClick={handleLogout}
             disabled={logoutLoading}
-            className="nav-chip glass border border-gray-600/50 px-3 py-1.5 rounded-lg flex items-center gap-2 hover:border-bearish/60 transition-smooth"
+            className="nav-pill hover:border-bearish/60 transition-smooth"
           >
-            <LogOut size={14} className="text-bearish" />
+            <LogOut size={14} className="text-bearish flex-shrink-0" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-bearish">
               {logoutLoading ? 'Signing out' : 'Logout'}
             </span>
@@ -177,7 +163,7 @@ function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
       </div>
 
       {logoutError && (
-        <div className="text-xs text-bearish font-semibold px-2">
+        <div className="w-full text-xs text-bearish font-semibold px-1 sm:px-2">
           {logoutError}
         </div>
       )}

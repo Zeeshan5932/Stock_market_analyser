@@ -30,7 +30,7 @@ A professional full-stack AI-powered trading analysis platform for forex, commod
 - Real-time market explanations
 
 ✅ **Supported Assets**
-- **Forex**: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD
+- **Forex**:GBP/USD, USD/JPY, AUD/USD, USD/CAD
 - **Commodities**: Gold (XAU/USD), Silver (XAG/USD), Oil, Natural Gas
 - **Crypto**: BTC/USD, ETH/USD, XRP/USD, ADA/USD
 
