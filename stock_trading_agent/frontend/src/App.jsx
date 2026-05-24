@@ -34,6 +34,8 @@ const TradingApp = () => {
       skeletonTimer = setTimeout(() => {
         setLoadingStage('skeleton')
       }, 450)
+    } else if (loading && analysisResult) {
+      setLoadingStage('refreshing')
     } else {
       setLoadingStage('idle')
     }
