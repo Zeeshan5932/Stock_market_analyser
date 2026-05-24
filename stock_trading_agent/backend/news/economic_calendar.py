@@ -94,11 +94,26 @@ def get_economic_calendar(settings: Settings) -> Dict[str, Any]:
             }
 
         now_utc = datetime.now(timezone.utc)
-        sixty_mins_later = now_utc + timedelta(minutes=60)
+        # Expand window to next 7 days so backend can return upcoming events
+        window_end = now_utc + timedelta(days=7)
 
-        # Filter events within next 60 minutes
+        # Collect upcoming events within the next 7 days
         upcoming_events = []
         has_high_impact = False
+
+        def _analysis_for_title(title: str, currency: str) -> str:
+            t = title.upper()
+            if 'CPI' in t:
+                return f"{title}: May increase {currency} volatility. Gold and forex pairs can move sharply during release."
+            if 'NON-FARM' in t or 'NFP' in t:
+                return f"{title}: US employment data often causes sharp USD moves and sudden volatility."
+            if 'FOMC' in t or 'INTEREST RATE' in t or 'RATE DECISION' in t:
+                return f"{title}: Central bank policy can drive sustained moves in {currency}, bonds and precious metals."
+            if 'GDP' in t:
+                return f"{title}: Broad economic growth measure; may influence currency sentiment and risk appetite."
+            if 'UNEMPLOY' in t:
+                return f"{title}: Labor market data can affect monetary policy expectations and {currency}."
+            return f"{title}: Market-moving event; expect increased short-term volatility."
 
         for event in data:
             event_time_str = event.get("date", "")
@@ -110,13 +125,14 @@ def get_economic_calendar(settings: Settings) -> Dict[str, Any]:
             except (ValueError, TypeError):
                 continue
 
-            # Only look at events within the next 60 minutes
-            if now_utc <= event_time <= sixty_mins_later:
+            # Only look at events within the next 7 days
+            if now_utc <= event_time <= window_end:
                 title = event.get("event", "")
                 currency = event.get("country", "").upper() if event.get("country") else "USD"
                 impact = event.get("impact", "").upper() if event.get("impact") else "MEDIUM"
                 forecast = event.get("forecast", "")
                 previous = event.get("previous", "")
+                actual = event.get("actual", "") if event.get("actual") is not None else ""
 
                 # Map country code to currency
                 currency_map_code = {
@@ -131,18 +147,23 @@ def get_economic_calendar(settings: Settings) -> Dict[str, Any]:
                 }
                 currency = currency_map_code.get(currency, currency)
 
-                is_high_impact = _is_high_impact(title, "")
+                is_high_impact = (impact == 'HIGH') or _is_high_impact(title, "")
                 if is_high_impact:
                     has_high_impact = True
+
+                volatility = 'HIGH' if impact == 'HIGH' else ('MEDIUM' if impact == 'MEDIUM' else 'LOW')
 
                 upcoming_events.append({
                     "title": title,
                     "currency": currency,
                     "impact": impact,
-                    "time": event_time.strftime("%H:%M UTC"),
+                    "time": event_time.strftime("%Y-%m-%d %H:%M UTC"),
                     "forecast": forecast,
                     "previous": previous,
+                    "actual": actual,
                     "is_high_impact": is_high_impact,
+                    "volatility": volatility,
+                    "analysis": _analysis_for_title(title, currency),
                 })
 
         # Sort by time
@@ -150,7 +171,7 @@ def get_economic_calendar(settings: Settings) -> Dict[str, Any]:
 
         risk_note = ""
         if has_high_impact:
-            risk_note = "⚠️ High-impact economic event(s) within 60 minutes. Increased volatility expected."
+            risk_note = "⚠️ High-impact economic event(s) in the coming 24 hours. Increased volatility possible."
 
         return {
             "has_high_impact_news": has_high_impact,

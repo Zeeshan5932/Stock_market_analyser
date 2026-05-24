@@ -25,6 +25,7 @@ const TradingApp = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [loadingStage, setLoadingStage] = useState('idle')
+  const [newsOpen, setNewsOpen] = useState(false)
 
   useEffect(() => {
     let skeletonTimer
@@ -119,6 +120,7 @@ const TradingApp = () => {
           analysisResult={analysisResult}
           loading={loading}
           loadingStage={loadingStage}
+          onOpenNews={() => setNewsOpen(true)}
         />
 
         {/* Dashboard */}
@@ -132,6 +134,11 @@ const TradingApp = () => {
           selectedTimeframe={selectedTimeframe}
           selectedLookback={selectedLookback}
           selectedMarket={selectedMarket}
+          onPairChange={setSelectedPair}
+          onTimeframeChange={setSelectedTimeframe}
+          onAnalyze={handleAnalyze}
+          newsOpen={newsOpen}
+          onCloseNews={() => setNewsOpen(false)}
         />
       </div>
 

@@ -13,6 +13,7 @@ from config import settings
 from data.market_data import MarketDataProvider
 from strategy.signal_engine import SignalEngine
 from assistant.chatbot import get_chatbot_response
+from news.economic_calendar import get_economic_calendar
 
 
 # Initialize FastAPI app
@@ -190,6 +191,115 @@ async def analyze_market(request: AnalyzeRequest):
             status_code=500,
             detail=f"Analysis failed: {str(e)}"
         )
+
+
+# ============= Economic News =============
+@app.get("/api/news")
+async def get_news():
+    """Return top high-impact economic news for the next 7 days.
+
+    Returns JSON with `top_news` array. If no data available, returns fallback demo events.
+    """
+    try:
+        news = get_economic_calendar(settings)
+
+        # Keywords to include (broader list)
+        target_keywords = (
+            "CPI",
+            "PPI",
+            "NON-FARM",
+            "NFP",
+            "FOMC",
+            "INTEREST RATE",
+            "FED SPEECH",
+            "GDP",
+            "UNEMPLOY",
+            "RETAIL SALES",
+        )
+
+        events = news.get("events", []) if isinstance(news, dict) else []
+
+        top = []
+        for e in events:
+            title = (e.get("title") or "").upper()
+            impact = (e.get("impact") or "").upper()
+            # Keep HIGH impact events and prefer those matching keywords
+            matches_keyword = any(k in title for k in target_keywords)
+            if impact == "HIGH" and (matches_keyword or True):
+                top.append({
+                    "title": e.get("title"),
+                    "currency": e.get("currency"),
+                    "impact": e.get("impact"),
+                    "time": e.get("time"),
+                    "forecast": e.get("forecast"),
+                    "previous": e.get("previous"),
+                    "actual": e.get("actual", ""),
+                    "volatility": e.get("volatility", "HIGH" if (e.get("impact") or "").upper() == "HIGH" else "MEDIUM"),
+                    "analysis": e.get("analysis", ""),
+                })
+
+        # Sort by time (ISO-like strings)
+        try:
+            top.sort(key=lambda x: x.get("time") or "")
+        except Exception:
+            pass
+
+        # Keep up to 4
+        top_news = top[:4]
+
+        # Fallback demo events if none
+        if not top_news:
+            top_news = [
+                {
+                    "title": "US Consumer Price Index (CPI)",
+                    "currency": "USD",
+                    "impact": "HIGH",
+                    "time": "TBD",
+                    "forecast": "N/A",
+                    "previous": "N/A",
+                    "actual": "",
+                    "volatility": "HIGH",
+                    "analysis": "US CPI measures inflation; significant moves in USD, gold, and FX pairs are common.",
+                },
+                {
+                    "title": "FOMC Interest Rate Decision",
+                    "currency": "USD",
+                    "impact": "HIGH",
+                    "time": "TBD",
+                    "forecast": "N/A",
+                    "previous": "N/A",
+                    "actual": "",
+                    "volatility": "VERY HIGH",
+                    "analysis": "FOMC decisions can lead to sustained trends across FX, bonds, and equities.",
+                },
+                {
+                    "title": "US Non-Farm Payrolls (NFP)",
+                    "currency": "USD",
+                    "impact": "HIGH",
+                    "time": "TBD",
+                    "forecast": "N/A",
+                    "previous": "N/A",
+                    "actual": "",
+                    "volatility": "HIGH",
+                    "analysis": "NFP affects USD liquidity and often causes sharp intraday moves.",
+                },
+                {
+                    "title": "Interest Rate Decision",
+                    "currency": "USD",
+                    "impact": "HIGH",
+                    "time": "TBD",
+                    "forecast": "N/A",
+                    "previous": "N/A",
+                    "actual": "",
+                    "volatility": "HIGH",
+                    "analysis": "Central bank rate decisions can shift market expectations and volatility.",
+                },
+            ]
+
+        return {"top_news": top_news}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch news: {str(e)}")
 
 
 # ============= Market Candles =============

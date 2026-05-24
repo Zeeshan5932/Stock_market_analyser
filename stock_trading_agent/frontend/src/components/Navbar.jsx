@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Clock, Activity, Zap, BarChart3, TrendingUp, TrendingDown, LogOut, UserCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
-function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
+function Navbar({ selectedPair, analysisResult, loading, loadingStage, onOpenNews }) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [priceChange, setPriceChange] = useState(0)
   const [logoutError, setLogoutError] = useState('')
@@ -158,6 +158,17 @@ function Navbar({ selectedPair, analysisResult, loading, loadingStage }) {
             <span className="text-[10px] font-bold uppercase tracking-widest text-bearish">
               {logoutLoading ? 'Signing out' : 'Logout'}
             </span>
+          </button>
+        )}
+        {onOpenNews && (
+          <button
+            type="button"
+            onClick={onOpenNews}
+            className="nav-pill hover:border-accent/60 transition-smooth"
+            title="View news"
+          >
+            <Activity size={14} className="text-accent flex-shrink-0" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-accent">News</span>
           </button>
         )}
       </div>

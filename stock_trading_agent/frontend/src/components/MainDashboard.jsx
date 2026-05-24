@@ -3,6 +3,7 @@ import MarketCards from './MarketCards'
 import TradingChart from './TradingChart'
 import RiskPanel from './RiskPanel'
 import NewsAlert from './NewsAlert'
+import NewsDrawer from './NewsDrawer'
 import TrendTable from './TrendTable'
 import SignalPanel from './SignalPanel'
 import IndicatorsPanel from './IndicatorsPanel'
@@ -19,6 +20,11 @@ function MainDashboard({
   selectedTimeframe,
   selectedLookback,
   selectedMarket,
+  onPairChange,
+  onTimeframeChange,
+  onAnalyze,
+  newsOpen,
+  onCloseNews,
 }) {
   const defaultMarket = selectedMarket || 'Forex'
   const showInitialLoading = loadingStage === 'initial' && loading && !analysisResult
@@ -132,7 +138,15 @@ function MainDashboard({
             {/* Right Column: Risk Panel and News Alert */}
             <div className="lg:col-span-1 space-y-4 sm:space-y-6">
               <RiskPanel result={analysisResult} />
-              <NewsAlert result={analysisResult} />
+              <NewsAlert
+                result={analysisResult}
+                onPairChange={onPairChange}
+                onTimeframeChange={onTimeframeChange}
+                onAnalyze={onAnalyze}
+                externalOpen={newsOpen}
+                onCloseExternal={onCloseNews}
+              />
+              <NewsDrawer open={newsOpen} onClose={onCloseNews} />
             </div>
           </div>
 
