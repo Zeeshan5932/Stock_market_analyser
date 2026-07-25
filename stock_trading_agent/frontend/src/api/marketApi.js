@@ -3,12 +3,12 @@ import { auth } from '../lib/firebase'
 
 // Auto-detect API URL based on environment
 const getAPIBaseURL = () => {
-  // In development with Vite proxy
+  // Local Development
   if (import.meta.env.DEV) {
     return 'http://localhost:8000'
   }
-  // In production, use relative path or configured URL
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  // Production: Vercel Env Var OR Live Render URL
+  return import.meta.env.VITE_API_BASE_URL || 'https://stock-market-analyser-backend.onrender.com' // <-- Update with your exact Render URL
 }
 
 const API_BASE_URL = getAPIBaseURL()
@@ -23,7 +23,7 @@ const client = axios.create({
   },
 })
 
-// Add request interceptor for debugging
+// Request Interceptor: Attach Auth Token
 client.interceptors.request.use(async (config) => {
   console.log(`📡 API Request: ${config.method?.toUpperCase()} ${config.url}`)
 
@@ -43,7 +43,7 @@ client.interceptors.request.use(async (config) => {
   return config
 })
 
-// Add response interceptor for error handling
+// Response Interceptor: Logging & Error Handling
 client.interceptors.response.use(
   (response) => {
     console.log(`✅ API Response: ${response.status}`)
@@ -57,10 +57,6 @@ client.interceptors.response.use(
 
 /**
  * Analyze market for a given symbol
- * @param {string} symbol - Trading pair symbol (e.g., EUR/USD, XAU/USD)
- * @param {string} timeframe - Timeframe (e.g., 15m, 1h, 4h)
- * @param {string} lookback - Lookback period (e.g., 5d, 1mo)
- * @returns {Promise<Object>} Market analysis with signal, confidence, and risk levels
  */
 export const analyzeMarket = async (symbol, timeframe = '15m', lookback = '5d') => {
   try {
@@ -78,10 +74,6 @@ export const analyzeMarket = async (symbol, timeframe = '15m', lookback = '5d') 
 
 /**
  * Get candlestick data for a symbol
- * @param {string} symbol - Trading pair symbol
- * @param {string} timeframe - Timeframe
- * @param {string} lookback - Lookback period
- * @returns {Promise<Array>} Array of candle objects
  */
 export const getCandles = async (symbol, timeframe = '15m', lookback = '5d') => {
   try {
@@ -101,9 +93,6 @@ export const getCandles = async (symbol, timeframe = '15m', lookback = '5d') => 
 
 /**
  * Send message to chatbot
- * @param {string} message - User question or message
- * @param {Object} currentResult - Current market analysis result (optional)
- * @returns {Promise<Object>} Chatbot response
  */
 export const sendChatMessage = async (message, currentResult = null) => {
   try {
@@ -120,7 +109,6 @@ export const sendChatMessage = async (message, currentResult = null) => {
 
 /**
  * Check API health
- * @returns {Promise<Object>} Health status
  */
 export const checkHealth = async () => {
   try {
