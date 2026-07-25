@@ -4,6 +4,7 @@ import {
   X,
   BarChart3,
   Play,
+  Loader2,
   HelpCircle,
 } from 'lucide-react'
 
@@ -184,10 +185,10 @@ function Sidebar({
             className={`sidebar-cta w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-smooth uppercase tracking-widest text-sm ${
               loading
                 ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed opacity-60'
-                : 'bg-gradient-to-r from-bullish to-gold text-dark-bg hover:shadow-glow-bullish hover:shadow-lg'
+                : 'bg-gradient-to-r from-bullish to-gold text-dark-bg hover:shadow-glow-bullish'
             }`}
           >
-            <Play size={18} />
+            {loading ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
             {loading ? 'Analyzing...' : 'Analyze'}
           </button>
 

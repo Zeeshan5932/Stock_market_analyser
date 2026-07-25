@@ -111,6 +111,7 @@ function TradingChart({
 
   const [chartHeight, setChartHeight] = useState(DEFAULT_HEIGHT)
   const [tooltip, setTooltip] = useState(null)
+  const [chartReady, setChartReady] = useState(false)
 
   const containerRef = useRef(null)
   const chartRef = useRef(null)
@@ -290,6 +291,7 @@ function TradingChart({
       chartRef.current = chart
       candleSeriesRef.current = candleSeries
       volumeSeriesRef.current = volumeSeries
+      setChartReady(true)
     }
 
     setupChart()
@@ -310,17 +312,18 @@ function TradingChart({
       chartRef.current = null
       candleSeriesRef.current = null
       volumeSeriesRef.current = null
+      setChartReady(false)
     }
   }, [])
 
   useEffect(() => {
-    if (!chartRef.current || !candleSeriesRef.current || !volumeSeriesRef.current) {
+    if (!chartReady || !chartRef.current || !candleSeriesRef.current || !volumeSeriesRef.current) {
       return
     }
     candleSeriesRef.current.setData(candleData)
     volumeSeriesRef.current.setData(volumeData)
     chartRef.current.timeScale().fitContent()
-  }, [candleData, volumeData])
+  }, [chartReady, candleData, volumeData])
 
   useEffect(() => {
     if (!chartRef.current) return

@@ -29,6 +29,7 @@ function MainDashboard({
   const defaultMarket = selectedMarket || 'Forex'
   const showInitialLoading = loadingStage === 'initial' && loading && !analysisResult
   const showSkeleton = loadingStage === 'skeleton' && loading && !analysisResult
+  const showRefreshing = loadingStage === 'refreshing' && loading && analysisResult
   return (
     <div className="flex-1 overflow-auto bg-dark-bg space-y-4 sm:space-y-6 md:space-y-8 p-4 sm:p-6 md:p-8">
       {/* Error Message */}
@@ -76,6 +77,16 @@ function MainDashboard({
               <div className="skeleton h-24"></div>
               <div className="skeleton h-24 mt-3"></div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showRefreshing && (
+        <div className="glass-lg border border-bullish/20 p-4 sm:p-5 bg-bullish/10 flex items-center gap-3 fade-in">
+          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-bullish border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <div>
+            <p className="text-sm sm:text-base font-semibold text-white">Refreshing market analysis</p>
+            <p className="text-xs text-gray-300 mt-1">Fetching fresh candles and recalculating the dashboard...</p>
           </div>
         </div>
       )}
